@@ -3,778 +3,565 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAFS Master: Bad Debts & Allowances</title>
+    <title>HKDSE BAFS Master</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Babel for React compilation -->
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for compiling JSX in the browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Import Map for React & Icons -->
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "lucide-react": "https://esm.sh/lucide-react@0.263.1"
-      }
-    }
-    </script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
-        }
-        
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e293b; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
-        }
-
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
+        body { background-color: #020617; } /* matches tailwind slate-950 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="text-slate-200 font-sans selection:bg-blue-500/30">
+    
+    <!-- This is where our React app will render -->
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { 
-          TrendingUp, 
-          BookOpen, 
-          List, 
-          Network, 
-          X, 
-          Calculator, 
-          ArrowRight, 
-          PlayCircle, 
-          Play, 
-          AlertTriangle, 
-          Video, 
-          PenTool,
-          Youtube,
-          ExternalLink,
-          PieChart,
-          FileText
-        } from 'lucide-react';
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        // Icon mapping
-        const IconMap = {
-          TrendingUp, BookOpen, List, Network, X, Calculator, ArrowRight, PlayCircle, Play, AlertTriangle, Video, PenTool, Youtube, ExternalLink, PieChart, FileText
-        };
-
-        const Icon = ({ name, size = 20, className }) => {
-            const LucideIcon = IconMap[name];
-            if (!LucideIcon) return <span className="text-xs">?</span>;
-            return <LucideIcon size={size} className={className} />;
-        };
-
-        // --- Content Data ---
-
-        const summaryContent = [
-            {
-                id: 'intro',
-                title: 'Introduction & Statistics',
-                icon: 'TrendingUp',
-                content: (
-                    <div className="space-y-4">
-                        <p>In the trading environment, credit sales create <strong>Trade Receivables</strong>. However, businesses face the risk that customers may fail to pay due to bankruptcy or liquidation.</p>
-                        <div className="bg-slate-800 p-4 rounded-lg border-l-4 border-cyan-500">
-                            <h4 className="font-bold text-cyan-400 mb-2">Real-World Context (HK 2020)</h4>
-                            <ul className="list-disc pl-5 space-y-1 text-sm text-slate-300">
-                                <li><strong>6,685</strong> Bankruptcy Orders</li>
-                                <li><strong>234</strong> Compulsory Winding-up Orders</li>
-                            </ul>
-                            <p className="text-xs text-slate-400 mt-2 italic">Source: Official Receiver's Office</p>
-                        </div>
-                        <p className="text-sm"><strong>Accrual vs. Cash:</strong> Under accrual accounting, sales are recognized when earned. Prudence dictates we must anticipate potential losses from these sales.</p>
-                    </div>
-                )
-            },
-            {
-                id: 'concepts',
-                title: 'Core Accounting Concepts',
-                icon: 'BookOpen',
-                content: (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-slate-800 p-4 rounded-lg">
-                                <h4 className="font-bold text-purple-400">Prudence Concept</h4>
-                                <p className="text-sm text-slate-300 mt-2">Expenses and liabilities should be recognized as soon as they are possible. Assets should not be overstated.</p>
-                            </div>
-                            <div className="bg-slate-800 p-4 rounded-lg">
-                                <h4 className="font-bold text-green-400">Matching Concept</h4>
-                                <p className="text-sm text-slate-300 mt-2">Revenues and related expenses (like bad debt expense) must be recorded in the same accounting period.</p>
-                            </div>
-                        </div>
-                        <h4 className="font-bold mt-4">Key Definitions</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><strong className="text-red-400">Bad Debts:</strong> Receivables definitely proven uncollectible.</li>
-                            <li><strong className="text-yellow-400">Allowance for Doubtful Accounts:</strong> An estimate of receivables likely to become uncollectible. A <em>contra-asset</em> account.</li>
-                            <li><strong className="text-blue-400">Net Realisable Value:</strong> Trade Receivables minus Allowance.</li>
-                        </ul>
-                    </div>
-                )
-            },
-            {
-                id: 'allowance_types',
-                title: 'Specific vs. General Allowance',
-                icon: 'PieChart',
-                content: (
-                    <div className="space-y-4">
-                        <p className="text-sm text-slate-300">Allowances are categorized into two types based on how they are estimated:</p>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-slate-800 p-4 rounded-lg border border-orange-500/30">
-                                <h4 className="font-bold text-orange-400 mb-2">1. Specific Allowance</h4>
-                                <p className="text-sm text-slate-300 mb-2">Created for a <strong>specific debtor</strong> who is known to be facing financial difficulties (e.g., liquidation, dispute).</p>
-                                <div className="bg-slate-900 p-2 rounded text-xs mono text-orange-200">
-                                    Calculation: Exact amount doubtful for that customer.
-                                </div>
-                            </div>
-
-                            <div className="bg-slate-800 p-4 rounded-lg border border-blue-500/30">
-                                <h4 className="font-bold text-blue-400 mb-2">2. General Allowance</h4>
-                                <p className="text-sm text-slate-300 mb-2">Applied to the <strong>remaining pool</strong> of receivables to cover potential (unknown) future losses based on past experience.</p>
-                                <div className="bg-slate-900 p-2 rounded text-xs mono text-blue-200">
-                                    Calculation: % × (Total Receivables - Bad Debts - Specific Allowance Amounts)
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 text-sm">
-                            <strong className="text-yellow-400">Important Rule:</strong> When calculating General Allowance, you must exclude the debts already identified as Specific Allowances to avoid double counting.
-                        </div>
-                    </div>
-                )
-            },
-            {
-                id: 'comprehensive_example',
-                title: 'Comprehensive Worked Example',
-                icon: 'FileText',
-                content: (
-                    <div className="space-y-6 text-sm">
-                        <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                            <h4 className="font-bold text-white mb-2">Scenario (Year ended 31 Dec 2023)</h4>
-                            <ul className="list-disc pl-5 space-y-1 text-slate-300">
-                                <li>Trade Receivables balance: <strong>$100,000</strong></li>
-                                <li>Allowance for Doubtful Accounts (1 Jan 2023): <strong>$2,000</strong></li>
-                                <li><strong>Adjustments required:</strong>
-                                    <ol className="list-decimal pl-5 mt-1 text-slate-400">
-                                        <li>Mr. A is bankrupt. Write off his debt of <strong>$1,000</strong>.</li>
-                                        <li>Mr. B (owing <strong>$500</strong>) is facing difficulties. Specific allowance required.</li>
-                                        <li>General allowance of <strong>5%</strong> on remaining receivables.</li>
-                                    </ol>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {/* Step 1: Workings */}
-                        <div>
-                            <h4 className="font-bold text-cyan-400 mb-2">Step 1: Calculate Closing Allowance</h4>
-                            <div className="bg-slate-900 p-4 rounded-lg font-mono text-xs md:text-sm space-y-2">
-                                <div className="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>Trade Receivables (Gross)</span>
-                                    <span>$100,000</span>
-                                </div>
-                                <div className="flex justify-between text-red-400">
-                                    <span>Less: Bad Debts Written Off (Mr. A)</span>
-                                    <span>($1,000)</span>
-                                </div>
-                                <div className="flex justify-between font-bold">
-                                    <span>Adjusted Trade Receivables</span>
-                                    <span>$99,000</span>
-                                </div>
-                                
-                                <div className="pt-2 text-slate-400 italic">// Specific Allowance</div>
-                                <div className="flex justify-between">
-                                    <span>Mr. B (Specific)</span>
-                                    <span className="text-orange-400">$500</span>
-                                </div>
-
-                                <div className="pt-2 text-slate-400 italic">// General Allowance Calculation</div>
-                                <div className="flex justify-between text-slate-500">
-                                    <span>Remaining Pool ($99,000 - $500)</span>
-                                    <span>$98,500</span>
-                                </div>
-                                <div className="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>General Allowance (5% x $98,500)</span>
-                                    <span className="text-blue-400">$4,925</span>
-                                </div>
-
-                                <div className="flex justify-between font-bold text-green-400 pt-1">
-                                    <span>Total Closing Allowance Required</span>
-                                    <span>$5,425</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 2: Financial Statements */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-bold text-cyan-400 mb-2">Income Statement (Extract)</h4>
-                                <div className="bg-white text-slate-900 p-3 rounded shadow-lg text-xs font-mono">
-                                    <div className="font-bold border-b border-black mb-1">Expenses</div>
-                                    <div className="flex justify-between">
-                                        <span>Bad Debts (Write-off)</span>
-                                        <span>$1,000</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Increase in Allowance<br/><span className="text-[10px] text-slate-500">($5,425 c/f - $2,000 b/f)</span></span>
-                                        <span>$3,425</span>
-                                    </div>
-                                    <div className="flex justify-between border-t border-black mt-1 pt-1 font-bold">
-                                        <span>Total Expense</span>
-                                        <span>$4,425</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 className="font-bold text-cyan-400 mb-2">Statement of Fin. Position (Extract)</h4>
-                                <div className="bg-white text-slate-900 p-3 rounded shadow-lg text-xs font-mono">
-                                    <div className="font-bold border-b border-black mb-1">Current Assets</div>
-                                    <div className="flex justify-between">
-                                        <span>Trade Receivables</span>
-                                        <span>$99,000</span>
-                                    </div>
-                                    <div className="flex justify-between text-red-600">
-                                        <span>Less: Allowance for Doubtful A/c</span>
-                                        <span>($5,425)</span>
-                                    </div>
-                                    <div className="flex justify-between border-t border-black mt-1 pt-1 font-bold">
-                                        <span>Net Realisable Value</span>
-                                        <span>$93,575</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3: T-Account */}
-                        <div>
-                            <h4 className="font-bold text-cyan-400 mb-2">Allowance for Doubtful Accounts (T-Account)</h4>
-                            <div className="border border-slate-600 rounded bg-slate-900 p-4 font-mono text-xs overflow-x-auto">
-                                <div className="grid grid-cols-2 gap-8 min-w-[300px]">
-                                    {/* Debit Side */}
-                                    <div>
-                                        <div className="border-b border-slate-500 mb-2 pb-1 font-bold text-center">Debit</div>
-                                        <div className="flex justify-between group">
-                                            <span>Dec 31 Balance c/f</span>
-                                            <span className="font-bold text-green-400">$5,425</span>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Credit Side */}
-                                    <div className="border-l border-slate-600 pl-8 -ml-4">
-                                        <div className="border-b border-slate-500 mb-2 pb-1 font-bold text-center">Credit</div>
-                                        <div className="flex justify-between">
-                                            <span>Jan 1 Balance b/f</span>
-                                            <span>$2,000</span>
-                                        </div>
-                                        <div className="flex justify-between text-yellow-400">
-                                            <span>Dec 31 Profit & Loss</span>
-                                            <span>$3,425</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-8 mt-2 border-t border-double border-slate-500 pt-1">
-                                     <div className="text-right pr-2 font-bold">$5,425</div>
-                                     <div className="text-right font-bold">$5,425</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            },
-            {
-                id: 'entries',
-                title: 'Double Entry System',
-                icon: 'List',
-                content: (
-                    <div className="space-y-6">
-                        <div>
-                            <h4 className="font-bold text-lg mb-2">1. Writing off a Bad Debt</h4>
-                            <div className="mono bg-black p-3 rounded text-sm border border-slate-700">
-                                <div className="text-green-400">Dr Allowance for Doubtful Accounts</div>
-                                <div className="text-red-400 pl-8">Cr Trade Receivables</div>
-                                <div className="text-slate-500 italic mt-1">// Eliminate the debtor's balance</div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 className="font-bold text-lg mb-2">2. Year-End Adjustment</h4>
-                            <p className="text-sm mb-2">First, calculate the required ending allowance.</p>
-                            <div className="mono bg-black p-3 rounded text-sm border border-slate-700">
-                                <div className="text-slate-400 mb-1">If Allowance needs to INCREASE:</div>
-                                <div className="text-green-400">Dr Bad Debts (Expense)</div>
-                                <div className="text-red-400 pl-8">Cr Allowance for Doubtful Accounts</div>
-                            </div>
-                            <div className="mono bg-black p-3 rounded text-sm border border-slate-700 mt-2">
-                                <div className="text-slate-400 mb-1">If Allowance needs to DECREASE:</div>
-                                <div className="text-green-400">Dr Allowance for Doubtful Accounts</div>
-                                <div className="text-red-400 pl-8">Cr Bad Debts (Revenue)</div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h4 className="font-bold text-lg mb-2">3. Bad Debt Recovery</h4>
-                            <div className="mono bg-black p-3 rounded text-sm border border-slate-700">
-                                <div className="text-slate-400 mb-1">Step A: Reinstate Debt</div>
-                                <div className="text-green-400">Dr Trade Receivables</div>
-                                <div className="text-red-400 pl-8">Cr Allowance for Doubtful Accounts</div>
-                                <div className="text-slate-400 mb-1 mt-2">Step B: Record Receipt</div>
-                                <div className="text-green-400">Dr Bank/Cash</div>
-                                <div className="text-red-400 pl-8">Cr Trade Receivables</div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-        ];
-
-        // --- Mind Map Component ---
-        const MindMapNode = ({ x, y, label, type, onClick, active }) => {
-            const colors = {
-                root: 'bg-cyan-600 border-cyan-400',
-                concept: 'bg-purple-600 border-purple-400',
-                action: 'bg-emerald-600 border-emerald-400',
-                output: 'bg-orange-600 border-orange-400'
-            };
-
-            return (
-                <div 
-                    onClick={onClick}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 z-10
-                        ${colors[type]} ${active ? 'scale-110 ring-4 ring-white/20' : 'hover:scale-105'}
-                        rounded-full flex items-center justify-center text-center shadow-lg border-2`}
-                    style={{ left: `${x}%`, top: `${y}%`, width: '120px', height: '120px' }}
-                >
-                    <span className="text-xs font-bold text-white px-2 pointer-events-none select-none">{label}</span>
-                </div>
-            );
-        };
-
-        const MindMapLine = ({ x1, y1, x2, y2 }) => (
-            <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-                <line x1={`${x1}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y2}%`} stroke="#475569" strokeWidth="2" strokeDasharray="5,5" />
-            </svg>
+        // --- SVGs to replace external icons ---
+        const IconBookOpen = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        );
+        const IconNetwork = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
+        );
+        const IconCalculator = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+        );
+        const IconBookText = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M10 6h8"/><path d="M10 10h8"/><path d="M10 14h2"/></svg>
+        );
+        const IconDumbbell = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>
+        );
+        const IconChevronRight = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 18 15 12 9 6"/></svg>
+        );
+        const IconChevronDown = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"/></svg>
+        );
+        const IconArrowRight = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        );
+        const IconCheckCircle = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        );
+        const IconXCircle = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         );
 
-        const MindMap = () => {
-            const [selectedNode, setSelectedNode] = useState(null);
+        // --- DATA: MIND MAP ---
+        const MIND_MAP_DATA = {
+            id: 'root',
+            title: 'Depreciation of Non-Current Assets',
+            description: 'Systematic allocation of cost over useful life (Matching Concept)',
+            children: [
+                {
+                    id: 'expenditure',
+                    title: 'Expenditures',
+                    description: 'Capital vs Revenue',
+                    children: [
+                        { id: 'cap-exp', title: 'Capital Expenditure', description: 'Long-term benefits (>1 yr). Capitalised. Ex: Purchase price, Installation, Freight.' },
+                        { id: 'rev-exp', title: 'Revenue Expenditure', description: 'Short-term benefits. Expensed immediately. Ex: Rent, wages, daily repairs.' }
+                    ]
+                },
+                {
+                    id: 'methods',
+                    title: 'Depreciation Methods',
+                    description: 'Common ways to allocate cost',
+                    children: [
+                        { id: 'sl', title: 'Straight-Line', description: 'Constant charge each period. (Cost - Residual) / Useful Life.' },
+                        { id: 'rb', title: 'Reducing-Balance', description: 'Diminishing charge. NBV × fixed % rate. Higher dep early on.' },
+                        { id: 'ub', title: 'Usage-Based', description: 'Varies with output. (Cost - Residual) × (Actual Output / Total Estimated).' }
+                    ]
+                },
+                {
+                    id: 'accounting',
+                    title: 'Accounting Entries',
+                    description: 'Double entry records',
+                    children: [
+                        { id: 'charge', title: 'Annual Charge', description: 'Dr Depreciation (P&L) | Cr Accumulated Depreciation (SOFP)' },
+                        { id: 'transfer', title: 'Transfer to P&L', description: 'Dr Profit & Loss | Cr Depreciation' }
+                    ]
+                },
+                {
+                    id: 'disposal',
+                    title: 'Disposal & Trade-ins',
+                    description: 'Removing assets from books',
+                    children: [
+                        { id: 'disp-cost', title: '1. Transfer Cost', description: 'Dr Disposal | Cr Non-current asset' },
+                        { id: 'disp-acc', title: '2. Transfer Accum. Dep', description: 'Dr Accumulated dep | Cr Disposal' },
+                        { id: 'disp-cash', title: '3. Record Proceeds', description: 'Dr Cash/Bank (or New Asset if Trade-in) | Cr Disposal' },
+                        { id: 'disp-gain', title: '4. Gain or Loss', description: 'Balance of Disposal Account goes to P&L' }
+                    ]
+                }
+            ]
+        };
 
-            const nodes = [
-                { id: 1, x: 50, y: 50, label: 'Trade Receivables', type: 'root', info: "The starting point. Amounts owed by customers from credit sales." },
-                { id: 2, x: 20, y: 20, label: 'Prudence Concept', type: 'concept', info: "The guiding principle. We must not overstate assets, so we anticipate losses." },
-                { id: 3, x: 80, y: 20, label: 'Matching Concept', type: 'concept', info: "Expenses (Bad Debts) must be recorded in the same year as the Revenue (Sales) they relate to." },
-                { id: 4, x: 20, y: 80, label: 'Bad Debts (Write-off)', type: 'action', info: "Definite loss. The debtor is bankrupt. Remove immediately from books." },
-                { id: 5, x: 80, y: 80, label: 'Allowance (Estimate)', type: 'action', info: "Potential loss. Estimated % of remaining debtors. Adjusts Net Profit." },
-                { id: 6, x: 50, y: 85, label: 'Financial Statements', type: 'output', info: "Income Statement shows Expense. Financial Position shows Net Realisable Value." },
-            ];
+        // --- REUSABLE COMPONENTS ---
+        const TabButton = ({ active, icon: Icon, label, onClick }) => (
+            <button
+                onClick={onClick}
+                className={`flex items-center space-x-2 px-4 py-3 font-medium transition-all duration-200 border-b-2 ${
+                    active 
+                        ? 'border-blue-500 text-blue-400 bg-slate-800/50' 
+                        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
+                }`}
+            >
+                <Icon size={18} />
+                <span>{label}</span>
+            </button>
+        );
 
-            const connections = [
-                { from: 1, to: 2 }, { from: 1, to: 3 },
-                { from: 1, to: 4 }, { from: 1, to: 5 },
-                { from: 4, to: 6 }, { from: 5, to: 6 }
-            ];
+        const SectionHeading = ({ title, icon: Icon }) => (
+            <div className="flex items-center space-x-3 mb-6 border-b border-slate-700 pb-3">
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
+                    <Icon size={24} />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-100">{title}</h2>
+            </div>
+        );
+
+        const Accordion = ({ title, isOpen, onToggle, children }) => (
+            <div className="mb-4 border border-slate-700 rounded-xl overflow-hidden bg-slate-800/50">
+                <button 
+                    onClick={onToggle}
+                    className="w-full flex items-center justify-between p-4 bg-slate-800 hover:bg-slate-700/80 transition-colors text-left"
+                >
+                    <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
+                    {isOpen ? <IconChevronDown size={20} className="text-blue-400"/> : <IconChevronRight size={20} className="text-slate-400"/>}
+                </button>
+                {isOpen && (
+                    <div className="p-5 text-slate-300 space-y-4">
+                        {children}
+                    </div>
+                )}
+            </div>
+        );
+
+        // --- TAB: SUMMARY ---
+        const SummaryTab = () => {
+            const [openSections, setOpenSections] = useState({'intro': true});
+
+            const toggleSection = (sec) => {
+                setOpenSections(prev => ({...prev, [sec]: !prev[sec]}));
+            };
 
             return (
-                <div className="h-full flex flex-col">
-                    <div className="bg-slate-800 p-4 mb-4 rounded-lg">
-                        <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
-                            <Icon name="Network" /> Interactive Concept Map
-                        </h2>
-                        <p className="text-sm text-slate-400">Click a node to explore relationships.</p>
-                    </div>
+                <div className="max-w-4xl mx-auto animate-fade-in">
+                    <SectionHeading title="Comprehensive Summary" icon={IconBookText} />
                     
-                    <div className="flex-1 relative bg-slate-900 rounded-xl border border-slate-700 overflow-hidden" style={{ minHeight: '500px' }}>
-                        {/* Lines */}
-                        {connections.map((conn, idx) => {
-                            const start = nodes.find(n => n.id === conn.from);
-                            const end = nodes.find(n => n.id === conn.to);
-                            return <MindMapLine key={idx} x1={start.x} y1={start.y} x2={end.x} y2={end.y} />;
-                        })}
+                    <Accordion 
+                        title="11.1 & 11.3: Introduction to Depreciation"
+                        isOpen={openSections['intro']}
+                        onToggle={() => toggleSection('intro')}
+                    >
+                        <p><strong>Non-current assets</strong> provide long-term benefits (&gt;1 accounting period). Under the <strong>accrual accounting</strong> concept, the cost is not fully expensed in the year of acquisition. Instead, it is capitalised and allocated via depreciation.</p>
+                        <p><strong>Definition:</strong> Depreciation is the systematic allocation of the cost of a tangible non-current asset over its useful life.</p>
+                        <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 text-sm">
+                            <strong>Underlying Concept: Matching Concept</strong>
+                            <p className="mt-1 text-slate-400">The cost of the asset must be allocated and matched against the revenues (benefits) it generates over the periods it is used.</p>
+                        </div>
+                        <p><strong>Factors affecting useful life:</strong></p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>Physical deterioration (wear and tear, rust, decay).</li>
+                            <li>Depletion (e.g., coal mines, oil wells).</li>
+                            <li>Economic factors (obsolescence due to tech/fashion, or inadequacy).</li>
+                        </ul>
+                    </Accordion>
 
-                        {/* Nodes */}
-                        {nodes.map(node => (
-                            <MindMapNode 
-                                key={node.id} 
-                                {...node} 
-                                active={selectedNode?.id === node.id}
-                                onClick={() => setSelectedNode(node)} 
-                            />
-                        ))}
+                    <Accordion 
+                        title="11.2: Capital vs Revenue Expenditure"
+                        isOpen={openSections['caprev']}
+                        onToggle={() => toggleSection('caprev')}
+                    >
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="bg-emerald-900/20 border border-emerald-800/50 p-4 rounded-lg">
+                                <h4 className="font-bold text-emerald-400 mb-2">Capital Expenditure</h4>
+                                <ul className="list-disc pl-5 space-y-1 text-sm">
+                                    <li>Long-term benefits (&gt; 1 year).</li>
+                                    <li>Includes purchase price + <strong>directly attributable costs</strong> (freight, installation, testing) to bring asset to location/condition for use.</li>
+                                    <li>Includes extension/improvement to existing assets.</li>
+                                    <li><strong>Double Entry:</strong> Dr Non-current asset | Cr Cash/Bank</li>
+                                </ul>
+                            </div>
+                            <div className="bg-orange-900/20 border border-orange-800/50 p-4 rounded-lg">
+                                <h4 className="font-bold text-orange-400 mb-2">Revenue Expenditure</h4>
+                                <ul className="list-disc pl-5 space-y-1 text-sm">
+                                    <li>Short-term benefits (day-to-day operations).</li>
+                                    <li>Wholly expensed in the period incurred.</li>
+                                    <li>Examples: Rent, wages, petrol, regular insurance, repairs.</li>
+                                    <li><strong>Double Entry:</strong> Dr Expense | Cr Cash/Bank</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="bg-blue-900/20 border border-blue-800/50 p-4 rounded-lg mt-4 text-sm">
+                            <strong className="text-blue-400">Answering Tip - Repairs:</strong> Normally revenue expenditure. <em>Exception:</em> Repairs made to a second-hand asset *before* it is ready for its intended use are treated as capital expenditure (e.g., fixing the engine on a newly purchased used van).
+                        </div>
+                    </Accordion>
 
-                        {/* Info Panel Overlay */}
-                        {selectedNode && (
-                            <div className="absolute bottom-4 left-4 right-4 bg-slate-800/90 backdrop-blur border border-cyan-500/30 p-4 rounded-lg shadow-2xl fade-in z-20">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="font-bold text-cyan-400 text-lg">{selectedNode.label}</h3>
-                                        <p className="text-slate-200 mt-1">{selectedNode.info}</p>
+                    <Accordion 
+                        title="11.4: Commonly Used Depreciation Methods"
+                        isOpen={openSections['methods']}
+                        onToggle={() => toggleSection('methods')}
+                    >
+                        <div className="space-y-6">
+                            <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-blue-300 text-lg mb-2">1. Straight-Line Method</h4>
+                                <p className="text-sm text-slate-400 mb-3">Charges a constant amount each period, assuming even benefits over time.</p>
+                                <div className="flex items-center justify-center p-3 bg-slate-950 rounded border border-slate-800 font-mono text-emerald-400">
+                                    <div className="flex items-center space-x-3">
+                                        <span>Depreciation =</span>
+                                        <div className="flex flex-col items-center">
+                                            <span className="border-b border-emerald-400/50 pb-1 px-2">Cost - Residual Value</span>
+                                            <span className="pt-1 px-2">Useful Life</span>
+                                        </div>
                                     </div>
-                                    <button onClick={() => setSelectedNode(null)} className="text-slate-400 hover:text-white">
-                                        <Icon name="X" />
-                                    </button>
                                 </div>
                             </div>
+                            <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-blue-300 text-lg mb-2">2. Reducing-Balance Method</h4>
+                                <p className="text-sm text-slate-400 mb-3">Charge diminishes each year. Useful for assets that generate more benefits early in their life (or have rising repair costs later).</p>
+                                <div className="flex items-center justify-center p-3 bg-slate-950 rounded border border-slate-800 font-mono text-emerald-400">
+                                    <span>Depreciation = Net Book Value (NBV) × Fixed % Rate</span>
+                                </div>
+                            </div>
+                            <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-blue-300 text-lg mb-2">3. Usage-Based Method</h4>
+                                <p className="text-sm text-slate-400 mb-3">Charge varies with actual usage (hours or output).</p>
+                                <div className="flex items-center justify-center p-3 bg-slate-950 rounded border border-slate-800 font-mono text-emerald-400">
+                                    <div className="flex items-center space-x-3 text-center">
+                                        <span>Depreciation = (Cost - Residual) ×</span>
+                                        <div className="flex flex-col items-center">
+                                            <span className="border-b border-emerald-400/50 pb-1 px-2">Actual output this period</span>
+                                            <span className="pt-1 px-2">Total estimated output</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Accordion>
+
+                    <Accordion 
+                        title="11.5 & 11.6: Accounting Entries & Disposal"
+                        isOpen={openSections['entries']}
+                        onToggle={() => toggleSection('entries')}
+                    >
+                        <div className="space-y-4">
+                            <h4 className="font-bold text-lg text-slate-200 border-b border-slate-700 pb-2">Annual Depreciation Charge</h4>
+                            <ul className="list-none space-y-2 bg-slate-900 p-4 rounded border border-slate-700 font-mono text-sm">
+                                <li><span className="text-red-400">Dr</span> Depreciation Account (Expense → P&L)</li>
+                                <li><span className="text-green-400">Cr</span> Accumulated Depreciation (Contra-asset → SOFP)</li>
+                            </ul>
+                            <h4 className="font-bold text-lg text-slate-200 border-b border-slate-700 pb-2 mt-6">Disposal of Non-Current Assets</h4>
+                            <p className="text-sm text-slate-400">Follow these 4 steps in the Disposal Account:</p>
+                            <ol className="list-decimal pl-5 space-y-3 bg-slate-900 p-4 rounded border border-slate-700 font-mono text-sm">
+                                <li>
+                                    <span className="text-slate-500">// Remove original cost</span><br/>
+                                    <span className="text-red-400">Dr</span> Disposal<br/>
+                                    <span className="text-green-400">Cr</span> Non-current asset
+                                </li>
+                                <li>
+                                    <span className="text-slate-500">// Remove accumulated depreciation</span><br/>
+                                    <span className="text-red-400">Dr</span> Accumulated depreciation<br/>
+                                    <span className="text-green-400">Cr</span> Disposal
+                                </li>
+                                <li>
+                                    <span className="text-slate-500">// Record proceeds / trade-in value</span><br/>
+                                    <span className="text-red-400">Dr</span> Cash/Bank (or New Asset if trade-in)<br/>
+                                    <span className="text-green-400">Cr</span> Disposal
+                                </li>
+                                <li>
+                                    <span className="text-slate-500">// Transfer balancing figure (Gain or Loss)</span><br/>
+                                    If Cr &gt; Dr: <span className="text-red-400">Dr</span> Disposal | <span className="text-green-400">Cr</span> Gain on disposal (P&L)<br/>
+                                    If Dr &gt; Cr: <span className="text-red-400">Dr</span> Loss on disposal (P&L) | <span className="text-green-400">Cr</span> Disposal
+                                </li>
+                            </ol>
+                        </div>
+                    </Accordion>
+                </div>
+            );
+        };
+
+        // --- TAB: MIND MAP ---
+        const TreeNode = ({ node, isRoot = false }) => {
+            const [expanded, setExpanded] = useState(true);
+            const hasChildren = node.children && node.children.length > 0;
+
+            return (
+                <div className="flex flex-col items-center">
+                    <div 
+                        onClick={() => hasChildren && setExpanded(!expanded)}
+                        className={`relative z-10 max-w-sm p-4 rounded-xl border-2 transition-all cursor-pointer shadow-lg
+                        ${isRoot 
+                            ? 'bg-blue-600 border-blue-400 text-white text-center' 
+                            : 'bg-slate-800 border-slate-600 hover:border-blue-400 text-slate-200'
+                        }
+                        ${hasChildren ? 'hover:-translate-y-1' : ''}
+                        `}
+                    >
+                        <h3 className={`font-bold ${isRoot ? 'text-xl' : 'text-md'} mb-1`}>{node.title}</h3>
+                        <p className={`text-xs ${isRoot ? 'text-blue-100' : 'text-slate-400'}`}>{node.description}</p>
+                        
+                        {hasChildren && (
+                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-700 rounded-full p-0.5 border border-slate-500">
+                                {expanded ? <IconChevronDown size={14} className="text-white"/> : <IconChevronRight size={14} className="text-white"/>}
+                            </div>
                         )}
+                    </div>
+
+                    {hasChildren && expanded && (
+                        <div className="flex flex-col items-center mt-4">
+                            <div className="w-0.5 h-6 bg-slate-600"></div>
+                            <div className="flex justify-center space-x-6">
+                                {node.children.map((child, index) => (
+                                    <div key={child.id} className="flex flex-col items-center relative">
+                                        {node.children.length > 1 && (
+                                            <div className="absolute top-0 w-full flex">
+                                                <div className={`h-0.5 bg-slate-600 w-1/2 ${index === 0 ? 'ml-auto' : ''} ${index > 0 && index < node.children.length - 1 ? 'w-full' : ''}`}></div>
+                                                <div className={`h-0.5 bg-slate-600 w-1/2 ${index === node.children.length - 1 ? 'mr-auto' : ''}`}></div>
+                                            </div>
+                                        )}
+                                        <div className="w-0.5 h-6 bg-slate-600"></div>
+                                        <TreeNode node={child} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const MindMapTab = () => {
+            return (
+                <div className="w-full min-h-[600px] overflow-auto animate-fade-in pb-20">
+                    <SectionHeading title="Dynamic Mind Map" icon={IconNetwork} />
+                    <div className="p-8 bg-slate-900/50 rounded-2xl border border-slate-800 flex justify-center min-w-max">
+                        <TreeNode node={MIND_MAP_DATA} isRoot={true} />
                     </div>
                 </div>
             );
         };
 
-        // --- Practice Component ---
-        const PracticeGenerator = () => {
-            const [problem, setProblem] = useState(null);
-            const [userAnswer, setUserAnswer] = useState('');
-            const [showResult, setShowResult] = useState(false);
-            const [feedback, setFeedback] = useState('');
-            const [streak, setStreak] = useState(0);
+        // --- TAB: PRACTICE GENERATOR ---
+        const generateQuestion = () => {
+            const types = ['straightLine', 'reducingBalance', 'classification', 'doubleEntry'];
+            const type = types[Math.floor(Math.random() * types.length)];
 
-            const generateProblem = () => {
-                const types = ['closing_allowance', 'bad_debt_expense', 'net_realisable'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                
-                const debtors = Math.floor(Math.random() * 50 + 50) * 1000; // 50k to 100k
-                const oldAllowance = Math.floor(Math.random() * 20 + 10) * 100; // 1k to 3k
-                const rate = [0.01, 0.02, 0.03, 0.05][Math.floor(Math.random() * 4)];
-                const writeOff = Math.floor(Math.random() * 5 + 1) * 1000; // 1k to 6k
-                
-                let qText = '';
-                let correct = 0;
-                let expl = '';
+            if (type === 'straightLine') {
+                const cost = Math.floor(Math.random() * 10 + 2) * 10000;
+                const residual = Math.floor(Math.random() * 5 + 1) * 1000;
+                const life = Math.floor(Math.random() * 5 + 3);
+                const ans = (cost - residual) / life;
+                const options = [ans, ans + 1000, (cost / life), (cost - residual) / (life + 1)].sort(() => Math.random() - 0.5).map(v => Math.round(v));
+                return {
+                    type: 'Calculation',
+                    text: `A company purchased a machine for $${cost.toLocaleString()}. The estimated residual value is $${residual.toLocaleString()} and its useful life is ${life} years. Using the straight-line method, what is the annual depreciation charge?`,
+                    options: options.map(o => `$${o.toLocaleString()}`),
+                    correct: `$${Math.round(ans).toLocaleString()}`,
+                    explanation: `Formula: (Cost - Residual) / Useful Life = ($${cost} - $${residual}) / ${life} = $${Math.round(ans)}`
+                };
+            } else if (type === 'reducingBalance') {
+                const cost = Math.floor(Math.random() * 5 + 5) * 10000;
+                const rates = [10, 20, 25, 50];
+                const rate = rates[Math.floor(Math.random() * rates.length)];
+                const year1Dep = cost * (rate / 100);
+                const nbv = cost - year1Dep;
+                const ans = nbv * (rate / 100);
+                const options = [ans, year1Dep, cost * (rate/100) * 2, (cost - year1Dep - ans) * (rate/100)].sort(() => Math.random() - 0.5).map(v => Math.round(v));
+                return {
+                    type: 'Calculation',
+                    text: `A motor vehicle was bought for $${cost.toLocaleString()} on 1 Jan 2021. Depreciation is charged at ${rate}% per annum using the reducing-balance method. What is the depreciation charge for the YEAR 2022 (Year 2)?`,
+                    options: options.map(o => `$${o.toLocaleString()}`),
+                    correct: `$${Math.round(ans).toLocaleString()}`,
+                    explanation: `Year 1 Dep = $${cost} × ${rate}% = $${year1Dep}. NBV at start of Year 2 = $${cost} - $${year1Dep} = $${nbv}. Year 2 Dep = $${nbv} × ${rate}% = $${ans}.`
+                };
+            } else if (type === 'classification') {
+                const items = [
+                    { q: "Purchasing a new delivery van", a: "Capital Expenditure" },
+                    { q: "Paying for annual vehicle insurance", a: "Revenue Expenditure" },
+                    { q: "Freight charges paid to deliver a new machine to the factory", a: "Capital Expenditure" },
+                    { q: "Repairing a broken window in the office", a: "Revenue Expenditure" },
+                    { q: "Replacing the engine of a newly purchased second-hand lorry before use", a: "Capital Expenditure" },
+                    { q: "Monthly electricity bill for the factory", a: "Revenue Expenditure" },
+                    { q: "Installation fee for a new computer server", a: "Capital Expenditure" }
+                ];
+                const item = items[Math.floor(Math.random() * items.length)];
+                return {
+                    type: 'Concepts',
+                    text: `Classify the following expenditure: "${item.q}"`,
+                    options: ["Capital Expenditure", "Revenue Expenditure", "Operating Income", "Intangible Asset"],
+                    correct: item.a,
+                    explanation: item.a === "Capital Expenditure" ? "Capital expenditures provide long-term benefits (>1 year) or are directly attributable costs to bring the asset to its intended use." : "Revenue expenditures provide short-term benefits and are related to day-to-day operations or maintaining existing conditions."
+                };
+            } else {
+                const questions = [
+                    { q: "What is the correct double entry to record the annual depreciation charge?", o: ["Dr Depreciation, Cr Accumulated Depreciation", "Dr Accumulated Depreciation, Cr Depreciation", "Dr Depreciation, Cr Non-Current Asset", "Dr Non-Current Asset, Cr Depreciation"], a: "Dr Depreciation, Cr Accumulated Depreciation" },
+                    { q: "When disposing of an asset, what is the first step in the Disposal account?", o: ["Dr Disposal, Cr Non-current asset (with original cost)", "Dr Non-current asset, Cr Disposal (with original cost)", "Dr Accumulated Dep, Cr Disposal", "Dr Cash, Cr Disposal"], a: "Dr Disposal, Cr Non-current asset (with original cost)" }
+                ];
+                const item = questions[Math.floor(Math.random() * questions.length)];
+                return {
+                    type: 'Double Entry',
+                    text: item.q,
+                    options: item.o.sort(() => Math.random() - 0.5),
+                    correct: item.a,
+                    explanation: "Remember: Depreciation is an expense (Dr), and Accumulated Depreciation is a contra-asset (Cr). For disposal, we first transfer the asset's original cost out by crediting the asset account."
+                };
+            }
+        };
 
-                // Common calculations
-                // Note: According to BAFS, allowance is calculated on remaining debtors AFTER write-off
-                const remainingDebtors = debtors - writeOff;
-                const newAllowance = remainingDebtors * rate;
-
-                if (type === 'closing_allowance') {
-                    qText = `At year end, Trade Receivables are $${debtors}. A bad debt of $${writeOff} needs to be written off immediately. The company maintains an Allowance for Doubtful Accounts of ${(rate * 100)}%. Calculate the Closing Balance of the Allowance account.`;
-                    correct = newAllowance;
-                    expl = `1. Adjust Debtors: $${debtors} - $${writeOff} = $${remainingDebtors}\n2. Apply Rate: $${remainingDebtors} × ${(rate*100)}% = $${correct}`;
-                } 
-                else if (type === 'bad_debt_expense') {
-                    qText = `Trade Receivables: $${debtors}. Existing Allowance b/f: $${oldAllowance}. Bad debts to write off: $${writeOff}. Policy: Allowance of ${(rate * 100)}% on receivables. Calculate the total amount charged to the Income Statement as "Bad Debts" expense.`;
-                    
-                    // Expense = WriteOff + (NewAllowance - OldAllowance)
-                    const changeInAllowance = newAllowance - oldAllowance;
-                    correct = writeOff + changeInAllowance;
-                    
-                    expl = `
-                        1. Write Off Amount: $${writeOff}
-                        2. New Allowance Target: ($${debtors} - $${writeOff}) × ${(rate*100)}% = $${newAllowance}
-                        3. Change in Allowance: $${newAllowance} (New) - $${oldAllowance} (Old) = $${changeInAllowance > 0 ? '+' : ''}${changeInAllowance}
-                        4. Total Expense = Write Off ($${writeOff}) + Change ($${changeInAllowance}) = $${correct}
-                    `;
-                }
-                else if (type === 'net_realisable') {
-                    qText = `Trade Receivables: $${debtors}. Bad debts to write off: $${writeOff}. Allowance policy: ${(rate * 100)}%. Calculate the Net Realisable Value of Trade Receivables to be shown in the Statement of Financial Position.`;
-                    correct = remainingDebtors - newAllowance;
-                    expl = `1. Gross Debtors after write-off: $${remainingDebtors}\n2. Allowance: $${remainingDebtors} × ${(rate*100)}% = $${newAllowance}\n3. Net Value = $${remainingDebtors} - $${newAllowance} = $${correct}`;
-                }
-
-                setProblem({ text: qText, answer: correct, explanation: expl, type });
-                setUserAnswer('');
-                setShowResult(false);
-            };
+        const PracticeTab = () => {
+            const [question, setQuestion] = useState(null);
+            const [selected, setSelected] = useState(null);
+            const [submitted, setSubmitted] = useState(false);
+            const [score, setScore] = useState({ correct: 0, total: 0 });
 
             useEffect(() => {
-                generateProblem();
+                setQuestion(generateQuestion());
             }, []);
 
-            const checkAnswer = () => {
-                const userVal = parseFloat(userAnswer);
-                if (isNaN(userVal)) return;
-
-                if (Math.abs(userVal - problem.answer) < 1) {
-                    setFeedback('Correct! Great job.');
-                    setStreak(s => s + 1);
-                } else {
-                    setFeedback('Incorrect. Review the working below.');
-                    setStreak(0);
-                }
-                setShowResult(true);
+            const handleNext = () => {
+                setQuestion(generateQuestion());
+                setSelected(null);
+                setSubmitted(false);
             };
 
+            const handleSubmit = () => {
+                if (!selected || submitted) return;
+                setSubmitted(true);
+                if (selected === question.correct) {
+                    setScore(s => ({ ...s, correct: s.correct + 1, total: s.total + 1 }));
+                } else {
+                    setScore(s => ({ ...s, total: s.total + 1 }));
+                }
+            };
+
+            if (!question) return <div className="text-slate-300">Loading...</div>;
+
+            const isCorrect = selected === question.correct;
+
             return (
-                <div className="h-full flex flex-col space-y-4">
-                    <div className="bg-slate-800 p-4 rounded-lg flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
-                            <Icon name="Calculator" /> Infinite Practice Engine
-                        </h2>
-                        <div className="bg-slate-900 px-3 py-1 rounded-full text-yellow-400 text-sm font-bold">
-                            Streak: {streak} 🔥
+                <div className="max-w-3xl mx-auto animate-fade-in">
+                    <div className="flex justify-between items-end border-b border-slate-700 pb-4 mb-6">
+                        <SectionHeading title="Practice Generator" icon={IconDumbbell} />
+                        <div className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-600 mb-6">
+                            <span className="text-slate-400 text-sm">Session Score: </span>
+                            <span className="text-blue-400 font-bold text-lg">{score.correct} / {score.total}</span>
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-slate-900 p-6 rounded-xl border border-slate-700 flex flex-col justify-center items-center">
-                        {problem && (
-                            <div className="w-full max-w-2xl">
-                                <p className="text-lg md:text-xl leading-relaxed mb-8 font-serif text-slate-200">
-                                    {problem.text}
-                                </p>
+                    <div className="bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-700 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                        <div className="mb-6">
+                            <span className="inline-block px-3 py-1 bg-blue-900/40 text-blue-300 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">{question.type}</span>
+                            <h3 className="text-xl font-medium text-slate-100 leading-relaxed">{question.text}</h3>
+                        </div>
 
-                                {!showResult ? (
-                                    <div className="flex gap-4">
-                                        <input 
-                                            type="number" 
-                                            value={userAnswer}
-                                            onChange={(e) => setUserAnswer(e.target.value)}
-                                            placeholder="Enter amount ($)"
-                                            className="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 text-lg"
-                                        />
-                                        <button 
-                                            onClick={checkAnswer}
-                                            className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-lg transition-colors"
-                                        >
-                                            Submit
-                                        </button>
+                        <div className="space-y-3 mb-8">
+                            {question.options.map((opt, idx) => {
+                                let stateClass = "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200 cursor-pointer";
+                                if (submitted) {
+                                    if (opt === question.correct) stateClass = "bg-emerald-900/40 border-emerald-500 text-emerald-300 cursor-default";
+                                    else if (opt === selected) stateClass = "bg-red-900/40 border-red-500 text-red-300 cursor-default";
+                                    else stateClass = "bg-slate-800 border-slate-700 text-slate-500 cursor-default opacity-50";
+                                } else if (selected === opt) {
+                                    stateClass = "bg-blue-900/40 border-blue-400 text-blue-200 cursor-pointer";
+                                }
+                                return (
+                                    <div key={idx} onClick={() => !submitted && setSelected(opt)} className={`p-4 rounded-xl border-2 transition-all flex items-center space-x-3 ${stateClass}`}>
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0
+                                            ${submitted && opt === question.correct ? 'border-emerald-500 bg-emerald-500/20' : ''}
+                                            ${submitted && opt === selected && !isCorrect ? 'border-red-500 bg-red-500/20' : ''}
+                                            ${!submitted && selected === opt ? 'border-blue-400 bg-blue-400/20' : ''}
+                                            ${!submitted && selected !== opt ? 'border-slate-500' : ''}
+                                        `}>
+                                            {submitted && opt === question.correct && <IconCheckCircle size={14} className="text-emerald-400" />}
+                                            {submitted && opt === selected && !isCorrect && <IconXCircle size={14} className="text-red-400" />}
+                                        </div>
+                                        <span className="font-medium">{opt}</span>
                                     </div>
-                                ) : (
-                                    <div className="bg-slate-800 p-6 rounded-lg border border-slate-600 animate-in fade-in slide-in-from-bottom-4">
-                                        <div className={`text-xl font-bold mb-4 ${feedback.includes('Correct') ? 'text-green-400' : 'text-red-400'}`}>
-                                            {feedback}
-                                        </div>
-                                        <div className="text-slate-400 font-mono text-sm whitespace-pre-line bg-black/30 p-4 rounded mb-6">
-                                            {problem.explanation}
-                                        </div>
-                                        <button 
-                                            onClick={generateProblem}
-                                            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            Next Question <Icon name="ArrowRight" size={16} />
-                                        </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-slate-700 pt-6">
+                            <div className="flex-1 pr-4">
+                                {submitted && (
+                                    <div className={`text-sm p-4 rounded-lg border ${isCorrect ? 'bg-emerald-900/20 border-emerald-800 text-emerald-300' : 'bg-orange-900/20 border-orange-800 text-orange-300'}`}>
+                                        <strong className="block mb-1">{isCorrect ? 'Excellent!' : 'Not quite right.'}</strong>
+                                        {question.explanation}
                                     </div>
                                 )}
                             </div>
-                        )}
+                            <button
+                                onClick={submitted ? handleNext : handleSubmit}
+                                disabled={!selected}
+                                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold transition-all shrink-0
+                                ${!selected ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : submitted ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/50' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/50'}`}
+                            >
+                                <span>{submitted ? 'Next Question' : 'Check Answer'}</span>
+                                <IconArrowRight size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             );
         };
 
-        // --- Video Component ---
-        const VideoResources = () => {
-            const videos = [
-                { 
-                    id: "dLEr9Ie5bi4", 
-                    title: "Understanding Bad Debts", 
-                    desc: "A fundamental introduction to what bad debts are and why they occur in trading businesses, linking to the Prudence Concept.",
-                    duration: "Video 1" 
-                },
-                { 
-                    id: "hzZscWFuK5w", 
-                    title: "Accounting for Bad Debts", 
-                    desc: "Learn the double entry system for writing off bad debts and how it impacts the Income Statement.",
-                    duration: "Video 2" 
-                },
-                { 
-                    id: "Yr-pxQyB19w", 
-                    title: "Allowance for Doubtful Accounts", 
-                    desc: "Deep dive into the 'Allowance' concept. Why we estimate potential losses and the matching principle behind it.",
-                    duration: "Video 3" 
-                },
-                { 
-                    id: "uhqyfW0muBs", 
-                    title: "General vs Specific Allowance", 
-                    desc: "Distinguishing between specific allowances for known risks and general allowances for the remaining pool of debtors.",
-                    duration: "Video 4" 
-                },
-                { 
-                    id: "2eQd2jsJ-r0", 
-                    title: "Year-End Adjustments", 
-                    desc: "How to calculate the increase or decrease in allowance at year-end and the resulting journal entries.",
-                    duration: "Video 5" 
-                },
-                { 
-                    id: "n22zMusGMak", 
-                    title: "Bad Debts Recovery", 
-                    desc: "The correct accounting treatment when a previously written-off debtor unexpectedly pays their debt.",
-                    duration: "Video 6" 
-                },
-                { 
-                    id: "QZFrbnCr5gQ", 
-                    title: "Ageing Schedule Analysis", 
-                    desc: "Using an ageing schedule to estimate doubtful debts with different percentages based on how overdue the amount is.",
-                    duration: "Video 7" 
-                },
-                { 
-                    id: "WDwIvWm8a_Q", 
-                    title: "Financial Statement Presentation", 
-                    desc: "How to properly present Trade Receivables, Allowances, and Net Realisable Value in the Statement of Financial Position.",
-                    duration: "Video 8" 
-                }
-            ];
-
-            return (
-                <div className="h-full flex flex-col space-y-6">
-                    {/* Exam Tip Banner */}
-                    <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 flex items-start md:items-center gap-4 shrink-0">
-                         <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-400 mt-1 md:mt-0">
-                            <Icon name="AlertTriangle" size={20} />
-                         </div>
-                         <div>
-                            <h4 className="font-bold text-yellow-400 text-xs uppercase tracking-wider mb-1">Exam Alert</h4>
-                            <p className="text-sm text-slate-400">Common mistake: Forgetting to credit Bad Debts Recovered to the Allowance account (Method 1) or P&L (Method 2). Stick to the textbook method.</p>
-                         </div>
-                    </div>
-
-                    {/* Video Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pb-20 pr-2">
-                        {videos.map((v, idx) => (
-                            <div key={v.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition-all group flex flex-col">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded bg-slate-900 text-cyan-500 flex items-center justify-center font-bold text-sm border border-slate-700 shadow-inner">
-                                            {idx + 1}
-                                        </div>
-                                        <h3 className="font-bold text-slate-200 line-clamp-1 group-hover:text-cyan-400 transition-colors">{v.title}</h3>
-                                    </div>
-                                </div>
-                                
-                                <p className="text-sm text-slate-400 mb-6 leading-relaxed flex-grow">
-                                    {v.desc}
-                                </p>
-                                
-                                <a 
-                                    href={`https://www.youtube.com/watch?v=${v.id}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 w-full bg-slate-700 hover:bg-red-600 text-white py-2.5 rounded-lg font-semibold text-sm transition-all group-hover:shadow-lg group-hover:shadow-red-900/20 mt-auto"
-                                >
-                                    <Icon name="Youtube" size={18} />
-                                    Watch on YouTube
-                                </a>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
-
-        // --- Main App Shell ---
+        // --- MAIN APP COMPONENT ---
         const App = () => {
             const [activeTab, setActiveTab] = useState('summary');
-            
+
             return (
-                <div className="min-h-screen flex flex-col md:flex-row max-w-7xl mx-auto overflow-hidden shadow-2xl bg-slate-950 text-slate-200">
-                    {/* Sidebar Nav */}
-                    <nav className="w-full md:w-20 bg-slate-900 border-r border-slate-800 flex flex-row md:flex-col items-center py-4 z-20 sticky top-0 md:h-screen">
-                        <div className="mb-0 md:mb-8 mx-4 md:mx-0">
-                            <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center text-black font-bold text-xl shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                                B
+                <div>
+                    {/* Header */}
+                    <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-xl">
+                        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="py-6 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                                <div>
+                                    <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                                        HKDSE BAFS Master
+                                    </h1>
+                                    <p className="text-slate-400 text-sm mt-1">Chapter 11: Depreciation</p>
+                                </div>
+                                <nav className="flex space-x-1 overflow-x-auto pb-1 no-scrollbar">
+                                    <TabButton active={activeTab === 'summary'} icon={IconBookOpen} label="Summary" onClick={() => setActiveTab('summary')} />
+                                    <TabButton active={activeTab === 'mindmap'} icon={IconNetwork} label="Mind Map" onClick={() => setActiveTab('mindmap')} />
+                                    <TabButton active={activeTab === 'practice'} icon={IconCalculator} label="Practice" onClick={() => setActiveTab('practice')} />
+                                </nav>
                             </div>
                         </div>
-                        
-                        <div className="flex flex-row md:flex-col gap-6 md:gap-8 mx-auto">
-                            {[
-                                { id: 'summary', icon: 'BookOpen', label: 'Docs' },
-                                { id: 'mindmap', icon: 'Network', label: 'Map' },
-                                { id: 'video', icon: 'Video', label: 'Video' },
-                                { id: 'practice', icon: 'PenTool', label: 'Drill' }
-                            ].map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`group relative flex flex-col items-center gap-1 transition-all
-                                        ${activeTab === tab.id ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
-                                >
-                                    <div className={`p-2 rounded-xl transition-all ${activeTab === tab.id ? 'bg-cyan-500/10' : 'bg-transparent'}`}>
-                                        <Icon name={tab.icon} size={24} />
-                                    </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider hidden md:block">{tab.label}</span>
-                                    
-                                    {activeTab === tab.id && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-r hidden md:block -ml-5"></div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </nav>
+                    </header>
 
                     {/* Main Content Area */}
-                    <main className="flex-1 h-screen overflow-y-auto bg-slate-950 relative">
-                        {/* Background Decor */}
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-                        <div className="p-6 md:p-10 relative z-10 max-w-5xl mx-auto pb-20">
-                            <header className="mb-8">
-                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-                                    BAFS <span className="text-cyan-400">Master</span>
-                                </h1>
-                                <p className="text-slate-400 text-sm md:text-base flex items-center gap-2">
-                                    Chapter 10: Bad Debts & Allowance for Doubtful Accounts
-                                    <span className="px-2 py-0.5 bg-slate-800 rounded text-xs border border-slate-700">HKDSE</span>
-                                </p>
-                            </header>
-
-                            <div className="fade-in">
-                                {activeTab === 'summary' && (
-                                    <div className="grid grid-cols-1 gap-6">
-                                        {summaryContent.map((section) => (
-                                            <div key={section.id} className="glass-panel rounded-xl overflow-hidden">
-                                                <div className="p-5 border-b border-slate-700/50 flex items-center gap-3">
-                                                    <div className="bg-slate-800 p-2 rounded-lg text-cyan-400">
-                                                        <Icon name={section.icon} size={20} />
-                                                    </div>
-                                                    <h2 className="text-xl font-bold">{section.title}</h2>
-                                                </div>
-                                                <div className="p-5 text-slate-300">
-                                                    {section.content}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {activeTab === 'mindmap' && <MindMap />}
-                                {activeTab === 'video' && <VideoResources />}
-                                {activeTab === 'practice' && <PracticeGenerator />}
-                            </div>
-                        </div>
+                    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {activeTab === 'summary' && <SummaryTab />}
+                        {activeTab === 'mindmap' && <MindMapTab />}
+                        {activeTab === 'practice' && <PracticeTab />}
                     </main>
                 </div>
             );
         };
 
-        // --- Render Root ---
-        const root = createRoot(document.getElementById('root'));
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
 </body>
