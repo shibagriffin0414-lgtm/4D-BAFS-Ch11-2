@@ -85,6 +85,23 @@ const SectionHeading = ({ title, icon: Icon }) => (
   </div>
 );
 
+const Accordion = ({ title, isOpen, onToggle, children }) => (
+  <div className="mb-4 border border-slate-700 rounded-xl overflow-hidden bg-slate-800/50">
+    <button 
+      onClick={onToggle}
+      className="w-full flex items-center justify-between p-4 bg-slate-800 hover:bg-slate-700/80 transition-colors text-left"
+    >
+      <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
+      {isOpen ? <ChevronDown size={20} className="text-blue-400"/> : <ChevronRight size={20} className="text-slate-400"/>}
+    </button>
+    {isOpen && (
+      <div className="p-5 text-slate-300 space-y-4">
+        {children}
+      </div>
+    )}
+  </div>
+);
+
 // --- TAB: SUMMARY ---
 const SummaryTab = () => {
   const [openSections, setOpenSections] = useState({'intro': true});
@@ -93,28 +110,15 @@ const SummaryTab = () => {
     setOpenSections(prev => ({...prev, [sec]: !prev[sec]}));
   };
 
-  const Accordion = ({ id, title, children }) => (
-    <div className="mb-4 border border-slate-700 rounded-xl overflow-hidden bg-slate-800/50">
-      <button 
-        onClick={() => toggleSection(id)}
-        className="w-full flex items-center justify-between p-4 bg-slate-800 hover:bg-slate-700/80 transition-colors text-left"
-      >
-        <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
-        {openSections[id] ? <ChevronDown size={20} className="text-blue-400"/> : <ChevronRight size={20} className="text-slate-400"/>}
-      </button>
-      {openSections[id] && (
-        <div className="p-5 text-slate-300 space-y-4">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <SectionHeading title="Comprehensive Summary" icon={BookText} />
       
-      <Accordion id="intro" title="11.1 & 11.3: Introduction to Depreciation">
+      <Accordion 
+        title="11.1 & 11.3: Introduction to Depreciation"
+        isOpen={openSections['intro']}
+        onToggle={() => toggleSection('intro')}
+      >
         <p><strong>Non-current assets</strong> provide long-term benefits (&gt;1 accounting period). Under the <strong>accrual accounting</strong> concept, the cost is not fully expensed in the year of acquisition. Instead, it is capitalised and allocated via depreciation.</p>
         <p><strong>Definition:</strong> Depreciation is the systematic allocation of the cost of a tangible non-current asset over its useful life.</p>
         <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 text-sm">
@@ -129,7 +133,11 @@ const SummaryTab = () => {
         </ul>
       </Accordion>
 
-      <Accordion id="caprev" title="11.2: Capital vs Revenue Expenditure">
+      <Accordion 
+        title="11.2: Capital vs Revenue Expenditure"
+        isOpen={openSections['caprev']}
+        onToggle={() => toggleSection('caprev')}
+      >
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-emerald-900/20 border border-emerald-800/50 p-4 rounded-lg">
             <h4 className="font-bold text-emerald-400 mb-2">Capital Expenditure</h4>
@@ -155,7 +163,11 @@ const SummaryTab = () => {
         </div>
       </Accordion>
 
-      <Accordion id="methods" title="11.4: Commonly Used Depreciation Methods">
+      <Accordion 
+        title="11.4: Commonly Used Depreciation Methods"
+        isOpen={openSections['methods']}
+        onToggle={() => toggleSection('methods')}
+      >
         <div className="space-y-6">
           {/* Straight Line */}
           <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
@@ -198,7 +210,11 @@ const SummaryTab = () => {
         </div>
       </Accordion>
 
-      <Accordion id="entries" title="11.5 & 11.6: Accounting Entries & Disposal">
+      <Accordion 
+        title="11.5 & 11.6: Accounting Entries & Disposal"
+        isOpen={openSections['entries']}
+        onToggle={() => toggleSection('entries')}
+      >
         <div className="space-y-4">
           <h4 className="font-bold text-lg text-slate-200 border-b border-slate-700 pb-2">Annual Depreciation Charge</h4>
           <ul className="list-none space-y-2 bg-slate-900 p-4 rounded border border-slate-700 font-mono text-sm">
